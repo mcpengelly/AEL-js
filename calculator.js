@@ -27,10 +27,9 @@ function Lexer (text) {
   this.position = 0;
   this.curr_char = text[this.position];
 
-  Lexer.prototype.next_character = function() {
+  Lexer.prototype.next_char = function() {
     this.position += 1;
     if (this.position > text.length - 1) {
-      console.log('<done reading input>')
       this.curr_char = null;
     } else {
       this.curr_char = text[this.position];
@@ -44,13 +43,14 @@ function Lexer (text) {
     var token;
     //if the current character is numeric, check if the next one is and add them together
     if (isNumeric(this.curr_char)) {
-      var result;
-      while (this.curr_char !== null && isNumeric(this.curr_char)) {
-        result = result + this.next_character();
-      }
-      console.log(result);
 
-      token = new Token('INTEGER', parseInt(this.curr_char));
+      var result = '';
+      while (this.curr_char !== null && isNumeric(this.curr_char)) {
+        result += this.curr_char;
+        this.next_char();
+      }
+      var digit = parseInt(result);
+      token = new Token('INTEGER', digit);
       if (logTokens) { console.log(token) }
       return token;
     }
@@ -58,14 +58,14 @@ function Lexer (text) {
     if (this.curr_char === '+') {
       token = new Token('PLUS', '+');
       if (logTokens) { console.log(token) }
-      this.next_character();
+      this.next_char();
       return token;
     }
 
     if (this.curr_char === '-') {
       token = new Token('MINUS', '-');
       if (logTokens) { console.log(token) }
-      this.next_character();
+      this.next_char();
       return token;
     }
   }
@@ -97,11 +97,10 @@ function Lexer (text) {
     var right = this.curr_token;
     this.eat_token('INTEGER');
 
-    var result;
     if (operator.type === 'PLUS') {
-      result = left.value + right.value;
+      var result = left.value + right.value;
     } else if (operator.type === 'MINUS') {
-      result = left.value - right.value;
+      var result = left.value - right.value;
     } else {
       console.log('something isn\'t right');
     }
