@@ -19,7 +19,6 @@ function Token(type, value) {
   this.value = value;
 }
 
-
 // Lexically analyze the string of characters input by the user, create and return tokens
 function Lexer (text) {
   this.text = text;
