@@ -20,8 +20,13 @@ function isNumeric(n) {
 }
 
 // todo:
-// handle whitespace characters in the input
-// handle integers of arbitrary
+// handle integers of arbitrary character length/
+// handle whitespace characters in the input/
+// handle operations with multiple operators
+// handle multiplcation and division
+// establish precedence and association for operators
+// handle parenthesis' in expression input
+
 function Lexer (text) {
   this.text = text;
   this.position = 0;
@@ -29,6 +34,8 @@ function Lexer (text) {
 
   Lexer.prototype.next_char = function() {
     this.position += 1;
+
+    //if end is reached
     if (this.position > text.length - 1) {
       this.curr_char = null;
     } else {
@@ -36,45 +43,64 @@ function Lexer (text) {
     }
   }
 
+  // if whitespace detected just move on
+  Lexer.prototype.skip_whitespace = function() {
+    while (this.curr_char !== null && (this.curr_char === ' ' || this.curr_char === '\n' ||
+           this.curr_char === '\t')) {
+        this.next_char();
+    }
+  }
+
   Lexer.prototype.get_next_token = function() {
     // turn a string of characters into tokens that are passed to the interpreter
     // handle integers and plus operators
 
-    var token;
-    //if the current character is numeric, check if the next one is and add them together
-    if (isNumeric(this.curr_char)) {
+    while (this.curr_char !== null) {
 
-      var result = '';
-      while (this.curr_char !== null && isNumeric(this.curr_char)) {
-        result += this.curr_char;
-        this.next_char();
+      var token;
+      // if whitespace ignore it
+      if (this.curr_char === ' ' || this.curr_char === '\n' || this.curr_char === '\t') {
+        this.skip_whitespace();
       }
-      var digit = parseInt(result);
-      token = new Token('INTEGER', digit);
-      if (logTokens) { console.log(token) }
-      return token;
-    }
 
-    if (this.curr_char === '+') {
-      token = new Token('PLUS', '+');
-      if (logTokens) { console.log(token) }
-      this.next_char();
-      return token;
-    }
+      // if the character is numeric, check if the next one is, continue until char isnt numeric
+      // concat together the numbers as it goes, cast the result to a number
+      if (isNumeric(this.curr_char)) {
+        var result = '';
 
-    if (this.curr_char === '-') {
-      token = new Token('MINUS', '-');
-      if (logTokens) { console.log(token) }
-      this.next_char();
-      return token;
+        while (this.curr_char !== null && isNumeric(this.curr_char)) {
+          result += this.curr_char;
+          this.next_char();
+        }
+        var digit = parseInt(result);
+        token = new Token('INTEGER', digit);
+        if (logTokens) { console.log(token) }
+        return token;
+      }
+
+      if (this.curr_char === '+') {
+        token = new Token('PLUS', '+');
+        if (logTokens) { console.log(token) }
+        this.next_char();
+        return token;
+      }
+
+      if (this.curr_char === '-') {
+        token = new Token('MINUS', '-');
+        if (logTokens) { console.log(token) }
+        this.next_char();
+        return token;
+      }
     }
+    //no characters remaining, return end of file token
+    return new Token('EOF', null);
   }
 
   Lexer.prototype.eat_token = function (token_type) {
     if (this.curr_token.type === token_type) {
       this.curr_token = this.get_next_token();
     } else {
-      console.log('error, could not do');
+      console.log('error, could not eat token');
     }
   }
 
