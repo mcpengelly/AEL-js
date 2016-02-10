@@ -22,8 +22,8 @@ function isNumeric(n) {
 // todo:
 // handle integers of arbitrary character length/
 // handle whitespace characters in the input/
-// handle operations with multiple operators
-// handle multiplcation and division
+// handle operations with multiple operators/
+// handle multiplcation and division/
 // establish precedence and association for operators
 // handle parenthesis' in expression input
 
@@ -91,6 +91,20 @@ function Lexer (text) {
         this.next_char();
         return token;
       }
+
+      if (this.curr_char === '*' || this.curr_char.toLowerCase() === 'x') {
+        token = new Token('MULTIPLY', '*');
+        if (logTokens) { console.log(token) }
+        this.next_char();
+        return token;
+      }
+
+      if (this.curr_char === '/') {
+        token = new Token('DIVIDE', '/');
+        if (logTokens) { console.log(token) }
+        this.next_char();
+        return token;
+      }
     }
     //no characters remaining, return end of file token
     return new Token('EOF', null);
@@ -104,36 +118,42 @@ function Lexer (text) {
     }
   }
 
+  Lexer.prototype.term = function () {
+    token = this.curr_token;
+    this.eat_token('INTEGER');
+    return token.value;
+  }
+
   Lexer.prototype.expr = function () {
     // evaluate the expression
     this.curr_token = this.get_next_token();
 
-    var left = this.curr_token;
-    this.eat_token('INTEGER');
+    result = this.term();
+    while (this.curr_token.type === 'PLUS' || this.curr_token.type === 'MINUS' ||
+    this.curr_token.type === 'MULTIPLY' || this.curr_token.type === 'DIVIDE'  ) {
 
-    var operator = this.curr_token;
-    if (operator.type === 'PLUS') {
-      this.eat_token('PLUS');
-    } else if (operator.type === 'MINUS') {
-      this.eat_token('MINUS');
-    } else {
-      throw Error('invalid operator type in expr');
-    }
-
-    var right = this.curr_token;
-    this.eat_token('INTEGER');
-
-    if (operator.type === 'PLUS') {
-      var result = left.value + right.value;
-    } else if (operator.type === 'MINUS') {
-      var result = left.value - right.value;
-    } else {
-      console.log('something isn\'t right');
+      var operator = this.curr_token;
+      if (operator.type === 'PLUS') {
+        this.eat_token('PLUS');
+        result = result + this.term();
+      } else if (operator.type === 'MINUS') {
+        this.eat_token('MINUS');
+        result = result - this.term();
+      } else if (operator.type === 'MULTIPLY') {
+        this.eat_token('MULTIPLY');
+        result = result * this.term();
+      } else if (operator.type === 'DIVIDE') {
+        this.eat_token('DIVIDE');
+        result = result / this.term();
+      } else {
+        throw Error('invalid operator type in expr');
+      }
     }
     return result;
   }
 }
 
+//todo: move portion of lexer into interpreter
 function Interpreter (lex) {
 
 }
@@ -144,5 +164,3 @@ while (true) {
   var result = lexer.expr();
   console.log(result);
 }
-
-
