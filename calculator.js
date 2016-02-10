@@ -11,19 +11,24 @@ handle integers of arbitrary character length/
 handle whitespace characters in the input/
 handle operations with multiple operators/
 handle multiplcation and division/
-establish precedence and association for operators
+establish precedence and association for operators/
 handle parenthesis' in expression input
 */
 
 var readlineSync = require('readline-sync');
 var logTokens = true; // toggle logging of read tokens
 
-// token takes a type and value
+/**
+ * [Token: stores a type and value, to be fed into interpreter]
+ * @param {string} type  [type of the token]
+ * @param {string} value [value of the token]
+ */
 function Token(type, value) {
   this.type = type;
   this.value = value;
 }
 
+/** Utility function */
 function isNumeric(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
 }
@@ -34,6 +39,10 @@ function Lexer (text) {
   this.position = 0;
   this.curr_char = text[this.position];
 
+  /**
+   * increments the position of the character "pointer"
+   * @return { character } returns the next character in the input sequence
+   */
   Lexer.prototype.next_char = function () {
     this.position += 1;
 
@@ -45,7 +54,10 @@ function Lexer (text) {
     }
   };
 
-  // if whitespace characters detected just move on
+  /**
+   * skips to the next character if it is a whitespace character,
+   * until it sees non-whitespace character
+   */
   Lexer.prototype.skip_whitespace = function () {
     while (this.curr_char !== null && (this.curr_char === ' ' ||
            this.curr_char === '\n' || this.curr_char === '\t')) {
@@ -54,20 +66,24 @@ function Lexer (text) {
     }
   };
 
+  /**
+   * scans the input creating tokens until the current character is null
+   * @return { token } [returns a token object that gets fed into the interpreter]
+   */
   Lexer.prototype.get_next_token = function () {
     // turn a string of characters into tokens that are passed to the interpreter
     // handle integers and plus operators
 
     while (this.curr_char !== null) {
-
       var token = '';
-      // if whitespace ignore it
+
+      // if whitespace
       if (this.curr_char === ' ' || this.curr_char === '\n' || this.curr_char === '\t') {
         this.skip_whitespace();
       }
 
-      // if the character is numeric, check if the next one is, continue until char isnt numeric
-      // concat together the numbers as it goes, cast the result to a number
+      // if curr_char is numeric, check if the char is, continue until char isnt numeric
+      // concat together the numbers as it goes, cast the result to a number (digit)
       if (isNumeric(this.curr_char)) {
         var result = '';
 
@@ -109,8 +125,6 @@ function Lexer (text) {
         return token;
       }
 
-      throw Error('Invalid operator type');
-
       // todo: parentheses support
       // if (this.curr_char === '(') {
       //   token = new Token('LEFTPAREN')
@@ -118,6 +132,9 @@ function Lexer (text) {
       //     this.next_char();
       //   }
       // }
+
+      //if this is reached an unrecognized operator has been used
+      throw Error('Invalid operator type');
     }
     //curr_char is null, no characters remaining, return end of file token
     return new Token('EOF', null);
@@ -125,7 +142,7 @@ function Lexer (text) {
 
 }
 
-// Interpreter
+// Interpreter: consumes tokens, evaluates results
 function Interpreter (lex) {
   this.lexer = lex;
   this.curr_token = this.lexer.get_next_token();
