@@ -1,13 +1,21 @@
-//AEL interpreter
-//lexer: read code, character by character and create tokens
-//parser: consumes tokens, creates parse tree object
-//evaluator: evaluates parse tree object
+// JavaScript AEL interpreter
 
-/*
-Write an interpreter that handles arithmetic expressions like “7 - 3 + 2 - 1” from scratch. Use any programming language you’re comfortable with and write it off the top of your head without looking at the examples. When you do that, think about components involved: a lexer that takes an input and converts it into a stream of tokens, a parser that feeds off the stream of the tokens provided by the lexer and tries to recognize a structure in that stream, and an interpreter that generates results after the parser has successfully parsed (recognized) a valid arithmetic expression. String those pieces together. Spend some time translating the knowledge you’ve acquired into a working interpreter for arithmetic expressions.*/
+/* components involved:
+a lexer that takes an input and converts it into a stream of tokens,
+a parser that feeds off the stream of the tokens provided by the lexer and tries to recognize a structure in that stream,
+an interpreter that generates results after the parser has successfully parsed (recognized) a valid arithmetic expression.
+*/
+
+/* todo
+handle integers of arbitrary character length/
+handle whitespace characters in the input/
+handle operations with multiple operators/
+handle multiplcation and division/
+establish precedence and association for operators
+handle parenthesis' in expression input */
 
 var readlineSync = require('readline-sync');
-var logTokens = true;
+var logTokens = true; // toggle logging of read tokens
 
 // token takes a type and value
 function Token(type, value) {
@@ -18,14 +26,6 @@ function Token(type, value) {
 function isNumeric(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
 }
-
-// todo:
-// handle integers of arbitrary character length/
-// handle whitespace characters in the input/
-// handle operations with multiple operators/
-// handle multiplcation and division/
-// establish precedence and association for operators
-// handle parenthesis' in expression input
 
 function Lexer (text) {
   this.text = text;
@@ -105,6 +105,13 @@ function Lexer (text) {
         this.next_char();
         return token;
       }
+
+      // if (this.curr_char === '(') {
+      //   token = new Token('LEFTPAREN')
+      //   while (this.curr_char !== ')') {
+      //     this.next_char();
+      //   }
+      // }
     }
     //no characters remaining, return end of file token
     return new Token('EOF', null);
@@ -124,6 +131,7 @@ function Lexer (text) {
     return token.value;
   }
 
+  // TODO: establish operator precedence and associativity (PEDMAS) using a Context Free Grammar
   Lexer.prototype.expr = function () {
     // evaluate the expression
     this.curr_token = this.get_next_token();
@@ -153,7 +161,7 @@ function Lexer (text) {
   }
 }
 
-//todo: move portion of lexer into interpreter
+//todo: move excess portions of lexer into interpreter
 function Interpreter (lex) {
 
 }
