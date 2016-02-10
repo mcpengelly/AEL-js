@@ -72,8 +72,6 @@ function Lexer (text) {
    */
   Lexer.prototype.get_next_token = function () {
     // turn a string of characters into tokens that are passed to the interpreter
-    // handle integers and plus operators
-
     while (this.curr_char !== null) {
       var token = '';
 
@@ -126,16 +124,18 @@ function Lexer (text) {
       }
 
       // todo: parentheses support
-      // if (this.curr_char === '(') {
-      //   token = new Token('LEFTPAREN')
-      //   while (this.curr_char !== ')') {
-      //     this.next_char();
-      //   }
-      // }
+      if (this.curr_char === '(') {
+        token = new Token('LEFTPAREN')
+        this.next_char();
+        while (this.curr_char !== ')') {
+          this.expr();
+        }
+      }
 
       //if this is reached an unrecognized operator has been used
       throw Error('Invalid operator type');
     }
+
     //curr_char is null, no characters remaining, return end of file token
     return new Token('EOF', null);
   };
@@ -165,9 +165,13 @@ function Interpreter (lex) {
     represents the following expressions:
     1, 1231, 90, ... */
   Interpreter.prototype.factor = function () {
-    token = this.curr_token;
-    this.eat_token('INTEGER');
-    return token.value;
+    if (this.curr_token.type === 'INTEGER') {
+      token = this.curr_token;
+      this.eat_token('INTEGER');
+      return token.value;
+    } else if (this.curr_token.type === 'LPARENS') {
+
+    }
   };
 
   /**
