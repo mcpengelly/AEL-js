@@ -1,22 +1,13 @@
 // JavaScript AEL interpreter
 
-/* components involved:
-a lexer that takes an input and converts it into a stream of tokens,
-a parser that feeds off the stream of the tokens provided by the lexer and tries to recognize a structure in that stream,
-an interpreter that generates results after the parser has successfully parsed (recognized) a valid arithmetic expression.
-*/
-
-/* todo
-handle integers of arbitrary character length/
-handle whitespace characters in the input/
-handle operations with multiple operators/
-handle multiplcation and division/
-establish precedence and association for operators/
-handle parenthesis' in expression input
-*/
-
+// for synchronous user input w/ node
 var readlineSync = require('readline-sync');
-var logTokens = true; // toggle logging of read tokens
+var logTokens = true; // toggle auto-logging the tokens that get read
+
+/** Utility function */
+function isNumeric(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
 
 /**
  * [Token: stores a type and value, to be fed into interpreter]
@@ -28,10 +19,6 @@ function Token(type, value) {
   this.value = value;
 }
 
-/** Utility function */
-function isNumeric(n) {
-  return !isNaN(parseFloat(n)) && isFinite(n);
-}
 
 // Lexically analyze the string of characters input by the user, create and return tokens
 function Lexer (text) {
@@ -125,14 +112,14 @@ function Lexer (text) {
       }
 
       if (this.curr_char === '(') {
-        token = new Token('LEFTPAREN');
+        token = new Token('LEFTPAREN', '(');
         if (logTokens) { console.log(token); }
         this.next_char();
         return token;
       }
 
       if (this.curr_char === ')') {
-        token = new Token('RIGHTPAREN');
+        token = new Token('RIGHTPAREN', ')');
         if (logTokens) { console.log(token); }
         this.next_char();
         return token;
@@ -166,7 +153,8 @@ function Interpreter (lex) {
   };
 
   /**
-  * [FACTOR: INTEGER | LEFTPAREN expr RIGHTPAREN]
+  * [FACTOR]
+  * grammar: INTEGER | LEFTPAREN expr RIGHTPAREN
     represents the following expressions:
     1, 1231, 90, ... */
   Interpreter.prototype.factor = function () {
@@ -185,8 +173,33 @@ function Interpreter (lex) {
   };
 
   /**
+  * [term: grammar for multiplication and/or division]
+  FACTOR ((MUL|DIV) FACTOR)*
+  represents the following expressions:
+  2 * 1,
+  9 * 10 / 2,
+  2 / 1 * 1000 * 152,
+  ... */
+  Interpreter.prototype.term = function () {
+    var result = this.factor();
+
+    while (this.curr_token.type === 'MULTIPLY' || this.curr_token.type === 'DIVIDE') {
+      if (this.curr_token.type === 'MULTIPLY') {
+        this.eat_token('MULTIPLY');
+        result = result * this.factor();
+      } else if (this.curr_token.type === 'DIVIDE') {
+        this.eat_token('DIVIDE');
+        result = result / this.factor();
+      } else {
+        throw Error('invalid operator type in term()');
+      }
+    }
+    return result;
+  };
+
+  /**
   * [expr: grammar for addition and/or subtraction]
-    FACTOR ((PLUS|MINUS) FACTOR)*
+    TERM ((PLUS|MINUS) TERM)*
     represents the following expressions:
     1 + 1,
     2 + 10 + 2,
@@ -211,31 +224,6 @@ function Interpreter (lex) {
     return result;
   };
 
-  /**
-* [term: grammar for multiplication and/or division]
-  FACTOR ((MUL|DIV) FACTOR)*
-  represents the following expressions:
-  2 * 1,
-  9 * 10 / 2,
-  2 / 1 * 1000 * 152,
-  ... */
-  Interpreter.prototype.term = function () {
-    var result = this.factor();
-
-    while (this.curr_token.type === 'MULTIPLY' || this.curr_token.type === 'DIVIDE') {
-      if (this.curr_token.type === 'MULTIPLY') {
-        this.eat_token('MULTIPLY');
-        result = result * this.factor();
-      } else if (this.curr_token.type === 'DIVIDE') {
-        this.eat_token('DIVIDE');
-        result = result / this.factor();
-      } else {
-        throw Error('invalid operator type in term()');
-      }
-    }
-    return result;
-  };
-
 }
 
 //entry point
@@ -248,3 +236,21 @@ while (true) {
   var result = interpreter.expr(); // generate the result
   console.log(result);
 }
+
+/* components involved:
+a lexer that takes an input and converts it into a stream of tokens,
+a parser that feeds off the stream of the tokens provided by the lexer and tries to recognize a structure in that stream,
+an interpreter that generates results after the parser has successfully parsed (recognized) a valid arithmetic expression.
+*/
+
+/*
+  handle integers of arbitrary character length/
+  handle whitespace characters in the input/
+  handle operations with multiple operators/
+  handle multiplcation and division/
+  establish precedence and association for operators/
+  handle parenthesis' in expression input/
+todo:
+  add support for sine, cosine, tangent operations, ...
+  add support for saving and reusing variables (?)
+*/
