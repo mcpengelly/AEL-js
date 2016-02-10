@@ -74,6 +74,7 @@ function Lexer (text) {
     // turn a string of characters into tokens that are passed to the interpreter
     while (this.curr_char !== null) {
       var token = '';
+      //create unique tokens based on what characters the lexer reads
 
       // if whitespace
       if (this.curr_char === ' ' || this.curr_char === '\n' || this.curr_char === '\t') {
@@ -123,15 +124,19 @@ function Lexer (text) {
         return token;
       }
 
-      // todo: parentheses support
       if (this.curr_char === '(') {
-        token = new Token('LEFTPAREN')
+        token = new Token('LEFTPAREN');
+        if (logTokens) { console.log(token); }
         this.next_char();
-        while (this.curr_char !== ')') {
-          this.expr();
-        }
+        return token;
       }
 
+      if (this.curr_char === ')') {
+        token = new Token('RIGHTPAREN');
+        if (logTokens) { console.log(token); }
+        this.next_char();
+        return token;
+      }
       //if this is reached an unrecognized operator has been used
       throw Error('Invalid operator type');
     }
@@ -161,16 +166,21 @@ function Interpreter (lex) {
   };
 
   /**
-  * [factor]
+  * [FACTOR: INTEGER | LEFTPAREN expr RIGHTPAREN]
     represents the following expressions:
     1, 1231, 90, ... */
   Interpreter.prototype.factor = function () {
+    var token = this.curr_token;
+    var result = '';
+
     if (this.curr_token.type === 'INTEGER') {
-      token = this.curr_token;
       this.eat_token('INTEGER');
       return token.value;
-    } else if (this.curr_token.type === 'LPARENS') {
-
+    } else if (this.curr_token.type === 'LEFTPAREN') {
+      this.eat_token('LEFTPAREN');
+      result = this.expr();
+      this.eat_token('RIGHTPAREN');
+      return result;
     }
   };
 
