@@ -106,6 +106,7 @@ function Lexer (text) {
         return token;
       }
 
+      throw Error('Invalid operator type')
       // if (this.curr_char === '(') {
       //   token = new Token('LEFTPAREN')
       //   while (this.curr_char !== ')') {
@@ -121,7 +122,7 @@ function Lexer (text) {
     if (this.curr_token.type === token_type) {
       this.curr_token = this.get_next_token();
     } else {
-      console.log('error, could not eat token');
+      throw Error('Type Mismatch, passed in token type and current token don\'t match');
     }
   }
 
@@ -167,7 +168,9 @@ function Interpreter (lex) {
 }
 
 while (true) {
-  var uInput = readlineSync.question('enter an arithmetic expression: ');
+  var uInput = readlineSync.question('enter an arithmetic expression (or enter exit to quit): ');
+  if (uInput.toLowerCase() === 'exit') { break; } // early return to quit program
+
   var lexer = new Lexer(uInput);
   var result = lexer.expr();
   console.log(result);
