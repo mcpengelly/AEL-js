@@ -3,9 +3,15 @@
 var readlineSync = require('readline-sync'); // for synchronous user input w/ node
 var logTokens = true; // toggle auto-logging the tokens that get read
 
-/** Utility */
+/** Helper func, if the string argument is a number return true*/
 function isNumeric(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
+/** Helper func, if argument is an alphabet character return true, else return false*/
+function isAlphabetChar(c) {
+  var regexp = /[a-z]/;
+  return regexp.test(c);
 }
 
 /**
@@ -51,11 +57,34 @@ function Lexer (text) {
     }
   };
 
-  Lexer.prototype.skip_fornow = function () {
-    while (this.curr_char === 's' || this.curr_char === 'i' || this.curr_char === 'n' ||
-          this.curr_char === 't' || this.curr_char === 'a' ||
-          this.curr_char === 'c' || this.curr_char === 'o') {
+  Lexer.prototype.read_char_sequence = function () {
+    var sequence = '';
+    while (this.curr_char !== null && isAlphabetChar(this.curr_char)) {
+        sequence = sequence + this.curr_char;
         this.next_char();
+    }
+
+    var seq = sequence.toLowerCase();
+    console.log(seq);
+    var token = '';
+
+    if (seq === 'sin') {
+      token = new Token('SINE', 'sin');
+      if (logTokens) { console.log(token); }
+
+      return token;
+    } else if (seq === 'cos') {
+      token = new Token('COSINE', 'cos');
+      if (logTokens) { console.log(token); }
+
+      return token;
+    } else if (seq === 'tan') {
+      token = new Token('TANGENT', 'tan');
+      if (logTokens) { console.log(token); }
+
+      return token;
+    } else {
+      throw Error('failed to recognize character sequence')
     }
   };
 
@@ -74,11 +103,10 @@ function Lexer (text) {
         this.skip_whitespace();
       }
 
-      //if sin lol
-      if (this.curr_char === 's' || this.curr_char === 'i' || this.curr_char === 'n' ||
-          this.curr_char === 't' || this.curr_char === 'a' ||
-          this.curr_char === 'c' || this.curr_char === 'o') {
-        this.skip_fornow();
+      //if an alphabetical character, read the sequence of characters and create a token from it
+      if (isAlphabetChar(this.curr_char)) {
+        var token = this.read_char_sequence();
+        return token;
       }
 
       // if curr_char is numeric, check if the char is, continue until char isnt numeric
@@ -137,6 +165,7 @@ function Lexer (text) {
         this.next_char();
         return token;
       }
+
       //if this is reached an unrecognized operator has been used
       throw Error('Invalid operator type');
     }
@@ -221,7 +250,8 @@ function Interpreter (lex) {
   Interpreter.prototype.expr = function () {
     var result = this.term();
 
-    while (this.curr_token.type === 'PLUS' || this.curr_token.type === 'MINUS') {
+    while (this.curr_token.type === 'PLUS' || this.curr_token.type === 'MINUS' ||
+     this.curr_token.type === 'SINE') {
 
       var operator = this.curr_token;
       if (operator.type === 'PLUS') {
@@ -230,6 +260,9 @@ function Interpreter (lex) {
       } else if (operator.type === 'MINUS') {
         this.eat_token('MINUS');
         result = result - this.term();
+      }  else if (operator.type === 'SINE') {
+        this.eat_token('SINE');
+        result = Math.sin(20); // todo: calculate dynamically
       } else {
         throw Error('invalid operator type in expr()');
       }
@@ -239,16 +272,16 @@ function Interpreter (lex) {
 
 }
 
-// //entry point
-// while (true) {
-//   //take expression from standard input
-//   var uInput = readlineSync.question('enter an arithmetic expression (or enter exit to quit): ');
-//   if (uInput.toLowerCase() === 'exit') { break; } // early return to quit program
-//   var lexer = new Lexer(uInput);
-//   var interpreter = new Interpreter(lexer);
-//   var result = interpreter.expr(); // generate the result
-//   console.log(result);
-// }
+//entry point
+while (true) {
+  //take expression from standard input
+  var uInput = readlineSync.question('enter an arithmetic expression (or enter exit to quit): ');
+  if (uInput.toLowerCase() === 'exit') { break; } // early return to quit program
+  var lexer = new Lexer(uInput);
+  var interpreter = new Interpreter(lexer);
+  var result = interpreter.expr(); // generate the result
+  console.log(result);
+}
 
 //export objects for testing
 exports._test = {

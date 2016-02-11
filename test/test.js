@@ -57,7 +57,7 @@ describe('calculator tests', function() {
     });
 
     var test7 = calculate('(2 + 2) * 8'); // 4 * 8, would evaluate the same as above otherwise
-    it('parenthesis should take precedence over other operators for evaluation', function() {
+    it('parenthesis should take precedence over other operators during evaluation', function() {
       assert(test7 === 32);
     });
 
