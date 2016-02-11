@@ -1,10 +1,9 @@
 // JavaScript AEL interpreter
 
-// for synchronous user input w/ node
-var readlineSync = require('readline-sync');
+var readlineSync = require('readline-sync'); // for synchronous user input w/ node
 var logTokens = true; // toggle auto-logging the tokens that get read
 
-/** Utility function */
+/** Utility */
 function isNumeric(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
 }
@@ -52,6 +51,14 @@ function Lexer (text) {
     }
   };
 
+  Lexer.prototype.skip_fornow = function () {
+    while (this.curr_char === 's' || this.curr_char === 'i' || this.curr_char === 'n' ||
+          this.curr_char === 't' || this.curr_char === 'a' ||
+          this.curr_char === 'c' || this.curr_char === 'o') {
+        this.next_char();
+    }
+  };
+
   /**
    * scans the input creating tokens until the current character is null
    * @return { token } [returns a token object that gets fed into the interpreter]
@@ -65,6 +72,13 @@ function Lexer (text) {
       // if whitespace
       if (this.curr_char === ' ' || this.curr_char === '\n' || this.curr_char === '\t') {
         this.skip_whitespace();
+      }
+
+      //if sin lol
+      if (this.curr_char === 's' || this.curr_char === 'i' || this.curr_char === 'n' ||
+          this.curr_char === 't' || this.curr_char === 'a' ||
+          this.curr_char === 'c' || this.curr_char === 'o') {
+        this.skip_fornow();
       }
 
       // if curr_char is numeric, check if the char is, continue until char isnt numeric
@@ -138,11 +152,11 @@ function Interpreter (lex) {
   this.lexer = lex;
   this.curr_token = this.lexer.get_next_token();
 
-/**
- * [eat_token: Compares the passed in token_type against the current token type, if they match get the next token, otherwise throw ]
- * @param  {string} token_type [a string representing the token type]
- * @return {null}
- */
+  /**
+    * [eat_token: Compares the passed in token_type against the current token type, if they match get the next token, otherwise throw ]
+    * @param  {string} token_type [a string representing the token type]
+    * @return {null}
+   */
   Interpreter.prototype.eat_token = function (token_type) {
     if (this.curr_token.type === token_type) {
       this.curr_token = this.lexer.get_next_token();
@@ -152,10 +166,10 @@ function Interpreter (lex) {
   };
 
   /**
-  * [FACTOR]
-  * grammar: INTEGER | LEFTPAREN expr RIGHTPAREN
-    represents the following expressions:
-    1, 1231, 90, ... */
+    * [FACTOR]
+    * grammar: INTEGER | LEFTPAREN expr RIGHTPAREN
+      represents the following expressions:
+      1, 1231, 90, ... */
   Interpreter.prototype.factor = function () {
     var token = this.curr_token;
     var result = '';
@@ -172,13 +186,13 @@ function Interpreter (lex) {
   };
 
   /**
-  * [term: grammar for multiplication and/or division]
-  FACTOR ((MUL|DIV) FACTOR)*
-  represents the following expressions:
-  2 * 1,
-  9 * 10 / 2,
-  2 / 1 * 1000 * 152,
-  ... */
+    * [term: grammar for multiplication and/or division]
+    FACTOR ((MUL|DIV) FACTOR)*
+    represents the following expressions:
+    2 * 1,
+    9 * 10 / 2,
+    2 / 1 * 1000 * 152,
+    ... */
   Interpreter.prototype.term = function () {
     var result = this.factor();
 
@@ -225,22 +239,23 @@ function Interpreter (lex) {
 
 }
 
-//entry point
-while (true) {
-  //take expression from standard input
-  var uInput = readlineSync.question('enter an arithmetic expression (or enter exit to quit): ');
-  if (uInput.toLowerCase() === 'exit') { break; } // early return to quit program
-  var lexer = new Lexer(uInput);
-  var interpreter = new Interpreter(lexer);
-  var result = interpreter.expr(); // generate the result
-  console.log(result);
-}
+// //entry point
+// while (true) {
+//   //take expression from standard input
+//   var uInput = readlineSync.question('enter an arithmetic expression (or enter exit to quit): ');
+//   if (uInput.toLowerCase() === 'exit') { break; } // early return to quit program
+//   var lexer = new Lexer(uInput);
+//   var interpreter = new Interpreter(lexer);
+//   var result = interpreter.expr(); // generate the result
+//   console.log(result);
+// }
 
 //export objects for testing
 exports._test = {
   lex: Lexer,
   interp: Interpreter
 }
+
 
 /* components involved:
 a lexer that takes an input and converts it into a stream of tokens,
