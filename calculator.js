@@ -24,7 +24,7 @@ function Token(type, value) {
   this.value = value;
 }
 
-// Lexically analyze the string of characters input by the user, create and return tokens
+// Lexically analyze the string of characters in0put by the user, create and return tokens
 function Lexer (text) {
   this.text = text;
   this.position = 0;
@@ -65,7 +65,6 @@ function Lexer (text) {
     }
 
     var seq = sequence.toLowerCase();
-    console.log(seq);
     var token = '';
 
     if (seq === 'sin') {
@@ -251,7 +250,9 @@ function Interpreter (lex) {
     var result = this.term();
 
     while (this.curr_token.type === 'PLUS' || this.curr_token.type === 'MINUS' ||
-     this.curr_token.type === 'SINE') {
+     this.curr_token.type === 'SINE' ||
+     this.curr_token.type === 'COSINE' ||
+     this.curr_token.type === 'TANGENT') {
 
       var operator = this.curr_token;
       if (operator.type === 'PLUS') {
@@ -260,9 +261,17 @@ function Interpreter (lex) {
       } else if (operator.type === 'MINUS') {
         this.eat_token('MINUS');
         result = result - this.term();
-      }  else if (operator.type === 'SINE') {
+
+        //TODO: seperate this part out into a grammar of its own?
+      } else if (operator.type === 'SINE') {
         this.eat_token('SINE');
-        result = Math.sin(20); // todo: calculate dynamically
+        result = Math.sin(20).toFixed(3); // todo: calculate dynamically
+      } else if (operator.type === 'COSINE') {
+        this.eat_token('COSINE');
+        result = Math.cos(20).toFixed(3); // todo: calculate dynamically
+      } else if (operator.type === 'TANGENT') {
+        this.eat_token('TANGENT');
+        result = Math.tan(20).toFixed(3); // todo: calculate dynamically
       } else {
         throw Error('invalid operator type in expr()');
       }

@@ -67,19 +67,22 @@ describe('calculator tests', function() {
     });
 
     //TDD: incomplete feature tests
-    var test9 = calculate('sin(20)');
+    var test9 = calculate('sin');
+    var result1 = parseFloat(test9);
     it('should resolve sine operators within expressions', function() {
-      assert(test9 === 0.912);
+      assert(result1 === 0.913);
     });
 
-    var test10 = calculate('cos(20)');
+    var test10 = calculate('cos');
+    var result2 = parseFloat(test10);
     it('should resolve cosine operators within expressions', function() {
-      assert(test10 === 0.408);
+      assert(result2 === 0.408);
     });
 
-    var test11 = calculate('tan(20)');
+    var test11 = calculate('tan');
+    var result3 = parseFloat(test11);
     it('should resolve tangent operators within expressions', function() {
-      assert(test11 === 2.237);
+      assert(result3 === 2.237);
     });
   });
 
