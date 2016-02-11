@@ -236,6 +236,12 @@ while (true) {
   console.log(result);
 }
 
+//export objects for testing
+exports._test = {
+  lex: Lexer,
+  interp: Interpreter
+}
+
 /* components involved:
 a lexer that takes an input and converts it into a stream of tokens,
 a parser that feeds off the stream of the tokens provided by the lexer and tries to recognize a structure in that stream,
