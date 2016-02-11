@@ -4,7 +4,7 @@
 var calculator = require('../calculator.js')
 var assert = require('assert');
 
-//todo: seperate lexer, parser and interpreter into seperate files so they can be more easily used together for testing
+//todo: seperate lexer, parser and interpreter into seperate files so they can be used as individual objects for testing
 //var lexer = require('../lexer.js');
 //var parser = require('../parser.js');
 //var evaluator = require('../evaluator.js');
@@ -21,6 +21,7 @@ function calculate(expression) {
     return result;
 }
 
+//TDD
 describe('calculator tests', function() {
   describe('basic operators', function() {
 
@@ -66,23 +67,28 @@ describe('calculator tests', function() {
       assert(test8 === 19);
     });
 
-    //TDD: incomplete feature tests
-    var test9 = calculate('sin');
+    var test9 = calculate('sin(20)');
     var result1 = parseFloat(test9);
-    it('should resolve sine operators within expressions', function() {
+    it('should resolve standalone sine operators correctly', function() {
       assert(result1 === 0.913);
     });
 
-    var test10 = calculate('cos');
+    var test10 = calculate('cos(20)');
     var result2 = parseFloat(test10);
-    it('should resolve cosine operators within expressions', function() {
+    it('should resolve standalone cosine operators correctly', function() {
       assert(result2 === 0.408);
     });
 
-    var test11 = calculate('tan');
+    var test11 = calculate('tan(20)');
     var result3 = parseFloat(test11);
-    it('should resolve tangent operators within expressions', function() {
+    it('should resolve standalone tangent operators correctly', function() {
       assert(result3 === 2.237);
+    });
+
+    var test12 = calculate('sin(20) + 10 - 5');
+    var result4 = parseFloat(test12);
+    it('should resolve sin within addition expressions', function() {
+      assert(result4 === 5.913);
     });
   });
 

@@ -59,26 +59,43 @@ function Lexer (text) {
 
   Lexer.prototype.read_char_sequence = function () {
     var sequence = '';
-    while (this.curr_char !== null && isAlphabetChar(this.curr_char)) {
-        sequence = sequence + this.curr_char;
-        this.next_char();
+    var sNum = '';
+    var digit;
+
+    //read the whole character string, then hardcode index values? lol
+    while ((this.curr_char !== null && isAlphabetChar(this.curr_char)) ||
+     this.curr_char === '(' || isNumeric(this.curr_char) || this.curr_char === ')') {
+        if (isNumeric(this.curr_char)) {
+          while (isNumeric(this.curr_char)) {
+            sNum = sNum + this.curr_char;
+            this.next_char();
+          }
+          digit = sNum;
+          sequence = sequence + digit;
+        } else {
+          sequence = sequence + this.curr_char;
+          this.next_char();
+        }
     }
 
     var seq = sequence.toLowerCase();
+    var op = seq[0] + seq[1] + seq[2];// assume operators of of 3 character length. todo: refactor
     var token = '';
+    var operatorArg = '';
+    digit = parseFloat(digit);
 
-    if (seq === 'sin') {
-      token = new Token('SINE', 'sin');
+    if (op === 'sin') {
+      token = new Token('SINE', digit);
       if (logTokens) { console.log(token); }
 
       return token;
-    } else if (seq === 'cos') {
-      token = new Token('COSINE', 'cos');
+    } else if (op === 'cos') {
+      token = new Token('COSINE', digit);
       if (logTokens) { console.log(token); }
 
       return token;
-    } else if (seq === 'tan') {
-      token = new Token('TANGENT', 'tan');
+    } else if (op === 'tan') {
+      token = new Token('TANGENT', digit);
       if (logTokens) { console.log(token); }
 
       return token;
@@ -103,6 +120,7 @@ function Lexer (text) {
       }
 
       //if an alphabetical character, read the sequence of characters and create a token from it
+      //for this i assume the only expressions to be used are sin, cos, tan
       if (isAlphabetChar(this.curr_char)) {
         var token = this.read_char_sequence();
         return token;
@@ -117,7 +135,7 @@ function Lexer (text) {
           result += this.curr_char;
           this.next_char();
         }
-        var digit = parseInt(result);
+        var digit = parseFloat(result);
         token = new Token('INTEGER', digit);
         if (logTokens) { console.log(token); }
         return token;
@@ -254,28 +272,31 @@ function Interpreter (lex) {
      this.curr_token.type === 'COSINE' ||
      this.curr_token.type === 'TANGENT') {
 
-      var operator = this.curr_token;
-      if (operator.type === 'PLUS') {
+      var token = this.curr_token;
+      if (token.type === 'PLUS') {
         this.eat_token('PLUS');
+        result = parseFloat(result);
         result = result + this.term();
-      } else if (operator.type === 'MINUS') {
+      } else if (token.type === 'MINUS') {
+        result = parseFloat(result);
         this.eat_token('MINUS');
         result = result - this.term();
 
-        //TODO: seperate this part out into a grammar of its own?
-      } else if (operator.type === 'SINE') {
+      //TODO: seperate this part out into a grammar of its own?
+      } else if (token.type === 'SINE') {
         this.eat_token('SINE');
-        result = Math.sin(20).toFixed(3); // todo: calculate dynamically
-      } else if (operator.type === 'COSINE') {
+        result = Math.sin(token.value).toFixed(3);
+      } else if (token.type === 'COSINE') {
         this.eat_token('COSINE');
-        result = Math.cos(20).toFixed(3); // todo: calculate dynamically
-      } else if (operator.type === 'TANGENT') {
+        result = Math.cos(token.value).toFixed(3);
+      } else if (token.type === 'TANGENT') {
         this.eat_token('TANGENT');
-        result = Math.tan(20).toFixed(3); // todo: calculate dynamically
+        result = Math.tan(token.value).toFixed(3);
       } else {
         throw Error('invalid operator type in expr()');
       }
     }
+    //result = parseFloat(result);
     return result;
   };
 
@@ -313,6 +334,6 @@ an interpreter that generates results after the parser has successfully parsed (
   establish precedence and association for operators/
   handle parenthesis' in expression input/
 todo:
-  add support for sine, cosine, tangent operations, ...
+  add support for sine, cosine, tangent operations, .../
   add support for saving and reusing variables (?)
 */
