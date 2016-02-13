@@ -1,4 +1,6 @@
 // JavaScript AEL interpreter
+// todo: add variable support
+// parse pascal0
 
 var readlineSync = require('readline-sync'); // for synchronous user input w/ node
 var logTokens = true; // toggle auto-logging the tokens that get read
@@ -29,7 +31,6 @@ function Lexer (text) {
     var regexp = /[a-z]/;
     return regexp.test(c);
   }
-
 
   /**
    * increments the position of the character "pointer"
@@ -319,22 +320,3 @@ exports._test = {
   lex: Lexer,
   interp: Interpreter
 }
-
-
-/* components involved:
-a lexer that takes an input and converts it into a stream of tokens,
-a parser that feeds off the stream of the tokens provided by the lexer and tries to recognize a structure in that stream,
-an interpreter that generates results after the parser has successfully parsed (recognized) a valid arithmetic expression.
-*/
-
-/*
-  handle integers of arbitrary character length/
-  handle whitespace characters in the input/
-  handle operations with multiple operators/
-  handle multiplcation and division/
-  establish precedence and association for operators/
-  handle parenthesis' in expression input/
-todo:
-  add support for sine, cosine, tangent operations, .../
-  add support for saving and reusing variables (?)
-*/
