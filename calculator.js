@@ -3,17 +3,6 @@
 var readlineSync = require('readline-sync'); // for synchronous user input w/ node
 var logTokens = true; // toggle auto-logging the tokens that get read
 
-/** Helper func, if the string argument is a number return true*/
-function isNumeric(n) {
-  return !isNaN(parseFloat(n)) && isFinite(n);
-}
-
-/** Helper func, if argument is an alphabet character return true, else return false*/
-function isAlphabetChar(c) {
-  var regexp = /[a-z]/;
-  return regexp.test(c);
-}
-
 /**
  * [Token: stores a type and value, to be fed into interpreter]
  * @param {string} type  [type of the token]
@@ -29,6 +18,18 @@ function Lexer (text) {
   this.text = text;
   this.position = 0;
   this.curr_char = text[this.position];
+
+  /** Helper func, if the string argument is a number return true*/
+  function isNumeric(n) {
+    return !isNaN(parseFloat(n)) && isFinite(n);
+  }
+
+  /** Helper func, if argument is an alphabet character return true, else return false*/
+  function isAlphabetChar(c) {
+    var regexp = /[a-z]/;
+    return regexp.test(c);
+  }
+
 
   /**
    * increments the position of the character "pointer"
