@@ -1,6 +1,6 @@
 // JavaScript AEL interpreter
 // todo: add variable support
-// parse pascal0
+// parse pascal
 
 var readlineSync = require('readline-sync'); // for synchronous user input w/ node
 var logTokens = true; // toggle auto-logging the tokens that get read
@@ -21,12 +21,11 @@ function Lexer (text) {
   this.position = 0;
   this.curr_char = text[this.position];
 
-  /** Helper func, if the string argument is a number return true*/
+  /** Helpers */
   function isNumeric(n) {
     return !isNaN(parseFloat(n)) && isFinite(n);
   }
 
-  /** Helper func, if argument is an alphabet character return true, else return false*/
   function isAlphabetChar(c) {
     var regexp = /[a-z]/;
     return regexp.test(c);
@@ -195,8 +194,22 @@ function Lexer (text) {
 
 }
 
+function AST () {
+
+}
+
+// inherits from AST
+function Num () {
+
+}
+
+//  inherits from AST
+function BinOp () {
+
+}
+
 // Interpreter: consumes tokens, evaluates results
-function Interpreter (lex) {
+function Parser (lex) {
   this.lexer = lex;
   this.curr_token = this.lexer.get_next_token();
 
@@ -304,13 +317,23 @@ function Interpreter (lex) {
 
 }
 
+function NodeVisitor () {
+
+}
+
+// Parser: inherits NodeVisitor
+function Interpreter () {
+
+}
+
 //entry point
 while (true) {
   //take expression from standard input
   var uInput = readlineSync.question('enter an arithmetic expression (or enter exit to quit): ');
   if (uInput.toLowerCase() === 'exit') { break; } // early return to quit program
   var lexer = new Lexer(uInput);
-  var interpreter = new Interpreter(lexer);
+  var parser = new Parser(lexer);
+  var interpreter = new Interpreter(parser);
   var result = interpreter.expr(); // generate the result
   console.log(result);
 }
