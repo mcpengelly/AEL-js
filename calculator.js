@@ -101,7 +101,7 @@ function Lexer (text) {
 
       return token;
     } else {
-      throw Error('failed to recognize character sequence')
+      throw Error('failed to recognize character sequence');
     }
   };
 
@@ -123,7 +123,7 @@ function Lexer (text) {
       //if an alphabetical character, read the sequence of characters and create a token from it
       //for this i assume the only expressions to be used are sin, cos, tan
       if (isAlphabetChar(this.curr_char)) {
-        var token = this.read_char_sequence();
+        token = this.read_char_sequence();
         return token;
       }
 
@@ -194,18 +194,23 @@ function Lexer (text) {
 
 }
 
-function AST () {
+//********** Parser ***********//
 
-}
+function AST () {}
 
 // inherits from AST
-function Num () {
-
+function Num (token) {
+  this.prototype = new AST();
+  this.type = token.type;
+  this.value = token.value;
 }
 
 //  inherits from AST
-function BinOp () {
-
+function BinOp (left, op, right) {
+  this.prototype = new AST();
+  this.left = left;
+  this.token = this.op = op;
+  this.right = right;
 }
 
 // Interpreter: consumes tokens, evaluates results
@@ -218,7 +223,7 @@ function Parser (lex) {
     * @param  {string} token_type [a string representing the token type]
     * @return {null}
    */
-  Interpreter.prototype.eat_token = function (token_type) {
+  Parser.prototype.eat_token = function (token_type) {
     if (this.curr_token.type === token_type) {
       this.curr_token = this.lexer.get_next_token();
     } else {
@@ -231,18 +236,17 @@ function Parser (lex) {
     * grammar: INTEGER | LEFTPAREN expr RIGHTPAREN
       represents the following expressions:
       1, 1231, 90, ... */
-  Interpreter.prototype.factor = function () {
+  Parser.prototype.factor = function () {
     var token = this.curr_token;
-    var result = '';
 
     if (this.curr_token.type === 'INTEGER') {
       this.eat_token('INTEGER');
-      return token.value;
+      return Num(this.curr_token);
     } else if (this.curr_token.type === 'LEFTPAREN') {
       this.eat_token('LEFTPAREN');
-      result = this.expr();
+      var node = this.expr();
       this.eat_token('RIGHTPAREN');
-      return result;
+      return node;
     }
   };
 
@@ -254,21 +258,21 @@ function Parser (lex) {
     9 * 10 / 2,
     2 / 1 * 1000 * 152,
     ... */
-  Interpreter.prototype.term = function () {
-    var result = this.factor();
+  Parser.prototype.term = function () {
+    var node = this.factor();
 
     while (this.curr_token.type === 'MULTIPLY' || this.curr_token.type === 'DIVIDE') {
+      var token = this.curr_token;
       if (this.curr_token.type === 'MULTIPLY') {
         this.eat_token('MULTIPLY');
-        result = result * this.factor();
-      } else if (this.curr_token.type === 'DIVIDE') {
+        } else if (this.curr_token.type === 'DIVIDE') {
         this.eat_token('DIVIDE');
-        result = result / this.factor();
-      } else {
+        } else {
         throw Error('invalid operator type in term()');
-      }
+        }
+        node = new BinOp(node, token, this.factor());
     }
-    return result;
+    return node;
   };
 
   /**
@@ -279,8 +283,8 @@ function Parser (lex) {
     2 + 10 + 2,
     2 - 1 + 1000 - 152,
     ... */
-  Interpreter.prototype.expr = function () {
-    var result = this.term();
+  Parser.prototype.expr = function () {
+    var node = this.term();
 
     while (this.curr_token.type === 'PLUS' || this.curr_token.type === 'MINUS' ||
      this.curr_token.type === 'SINE' ||
@@ -290,41 +294,71 @@ function Parser (lex) {
       var token = this.curr_token;
       if (token.type === 'PLUS') {
         this.eat_token('PLUS');
-        result = parseFloat(result);
-        result = result + this.term();
       } else if (token.type === 'MINUS') {
-        result = parseFloat(result);
         this.eat_token('MINUS');
-        result = result - this.term();
-
-      //TODO: seperate this part out into a grammar of its own?
-      } else if (token.type === 'SINE') {
-        this.eat_token('SINE');
-        result = Math.sin(token.value).toFixed(3);
-      } else if (token.type === 'COSINE') {
-        this.eat_token('COSINE');
-        result = Math.cos(token.value).toFixed(3);
-      } else if (token.type === 'TANGENT') {
-        this.eat_token('TANGENT');
-        result = Math.tan(token.value).toFixed(3);
       } else {
         throw Error('invalid operator type in expr()');
       }
+      // else if (token.type === 'SINE') {
+      //   this.eat_token('SINE');
+      //   result = Math.sin(token.value).toFixed(3);
+      // } else if (token.type === 'COSINE') {
+      //   this.eat_token('COSINE');
+      //   result = Math.cos(token.value).toFixed(3);
+      // } else if (token.type === 'TANGENT') {
+      //   this.eat_token('TANGENT');
+      //   result = Math.tan(token.value).toFixed(3);
+      node = BinOp(node, token, this.term());
     }
-    //result = parseFloat(result);
-    return result;
+    return node;
+  };
+
+  Parser.prototype.parse = function () {
+    return this.expr();
   };
 
 }
 
+//todo: implement js visitor pattern
 function NodeVisitor () {
+  NodeVisitor.prototype.visit = function(node) {
+    var method_name = 'visit_' + typeof node;
+    var visitor = '';
+    return
+  };
 
+  NodeVisitor.prototype.generic_visit = function () {
+    throw Error('Problem occurred while visiting node!');
+  };
 }
 
 // Parser: inherits NodeVisitor
-function Interpreter () {
+function Interpreter (parser) {
+  this.prototype = new NodeVisitor();
+  this.parser = parser;
 
+  Interpreter.prototype.visit_BinOp = function (node) {
+    if (node.op.type === 'PLUS') {
+      return this.prototype.visit(node.left) + this.prototype.visit(node.right);
+    } else if (node.op.type === 'MINUS') {
+      return this.prototype.visit(node.left) - this.prototype.visit(node.right);
+    } else if (node.op.type === 'MULTIPLY') {
+      return this.prototype.visit(node.left) * this.prototype.visit(node.right);
+    } else if (node.op.type === 'DIVIDE') {
+      return this.prototype.visit(node.left) / this.prototype.visit(node.right);
+    }
+  };
+
+  Interpreter.prototype.visit_Num = function (node) {
+    return node.value;
+  };
+
+  Interpreter.prototype.interpret = function () {
+   var tree = this.parser.parse();
+   return this.prototype.visit(tree);
+  };
 }
+
 
 //entry point
 while (true) {
@@ -334,12 +368,13 @@ while (true) {
   var lexer = new Lexer(uInput);
   var parser = new Parser(lexer);
   var interpreter = new Interpreter(parser);
-  var result = interpreter.expr(); // generate the result
+  var result = interpreter.interpret(); // generate the result
   console.log(result);
 }
 
 //export objects for testing
 exports._test = {
   lex: Lexer,
+  par: Parser,
   interp: Interpreter
-}
+};

@@ -21,7 +21,8 @@ function calculate(expression) {
     return result;
 }
 
-//TDD
+//TOD
+//TODO: fix tests now that visitor pattern has been implemented
 describe('calculator tests', function() {
   describe('basic operators', function() {
 
