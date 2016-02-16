@@ -3,24 +3,11 @@
 // todo: add variable support
 // parse pascal
 
-var readlineSync = require('readline-sync'); // for synchronous user input w/ node
-var logTokens = true; // toggle auto-logging the tokens that get read
-
-/**
- * [Token: stores a type and value, to be fed into interpreter]
- * @param {string} type  [type of the token]
- * @param {string} value [value of the token]
- */
-function Token (type, value) {
-  this.type = type;
-  this.value = value;
-}
-
   /** Helper methods */
   //todo: implement inheritsFrom
 
   function inheritsFrom (args) {
-    //var self = this;
+    //
   }
 
   function isNumeric(n) {
@@ -48,6 +35,18 @@ function Token (type, value) {
   };
   /** /Helper methods */
 
+var readlineSync = require('readline-sync'); // for synchronous user input w/ node
+var logTokens = true; // toggle auto-logging the tokens that get read
+
+/**
+ * [Token: stores a type and value, to be fed into interpreter]
+ * @param {string} type  [type of the token]
+ * @param {string} value [value of the token]
+ */
+function Token (type, value) {
+  this.type = type;
+  this.value = value;
+}
 
 /***************************************************
                       Lexer
@@ -230,13 +229,15 @@ function AST () {}
 
 // inherits from AST
 function Num (token) {
-  this.token = token
+  this.prototype = new AST();
+  this.token = token;
   this.value = token.value;
 }
 
 
 //  inherits from AST
 function BinOp (left, op, right) {
+  this.prototype = new AST();
   this.left = left;
   this.token = this.op = op;
   this.right = right;
