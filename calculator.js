@@ -1,4 +1,5 @@
 // JavaScript AEL interpreter
+
 // todo: add variable support
 // parse pascal
 
@@ -10,18 +11,18 @@ var logTokens = true; // toggle auto-logging the tokens that get read
  * @param {string} type  [type of the token]
  * @param {string} value [value of the token]
  */
-function Token(type, value) {
+function Token (type, value) {
   this.type = type;
   this.value = value;
 }
 
-// Lexically analyze the string of characters in0put by the user, create and return tokens
-function Lexer (text) {
-  this.text = text;
-  this.position = 0;
-  this.curr_char = text[this.position];
+  /** Helper methods */
+  //todo: implement inheritsFrom
 
-  /** Helpers */
+  function inheritsFrom (args) {
+    //var self = this;
+  }
+
   function isNumeric(n) {
     return !isNaN(parseFloat(n)) && isFinite(n);
   }
@@ -30,6 +31,33 @@ function Lexer (text) {
     var regexp = /[a-z]/;
     return regexp.test(c);
   }
+
+  //todo: refactor
+  var funcs = {
+    getAttr: function(ele, attr) {
+        var result = (ele.getAttribute && ele.getAttribute(attr)) || null;
+        if( !result ) {
+            var attrs = ele.attributes;
+            var length = attrs.length;
+            for(var i = 0; i < length; i++)
+                if(attrs[i].nodeName === attr)
+                    result = attrs[i].nodeValue;
+        }
+        return result;
+      }
+  };
+  /** /Helper methods */
+
+
+/***************************************************
+                      Lexer
+*****************************************************/
+
+// Lexically analyze the string of characters input by the user, create and return tokens
+function Lexer (text) {
+  this.text = text;
+  this.position = 0;
+  this.curr_char = text[this.position];
 
   /**
    * increments the position of the character "pointer"
@@ -194,20 +222,21 @@ function Lexer (text) {
 
 }
 
-//********** Parser ***********//
+/***************************************************
+                      Parser
+*****************************************************/
 
 function AST () {}
 
 // inherits from AST
 function Num (token) {
-  this.prototype = new AST();
-  this.type = token.type;
+  this.token = token
   this.value = token.value;
 }
 
+
 //  inherits from AST
 function BinOp (left, op, right) {
-  this.prototype = new AST();
   this.left = left;
   this.token = this.op = op;
   this.right = right;
@@ -241,7 +270,7 @@ function Parser (lex) {
 
     if (this.curr_token.type === 'INTEGER') {
       this.eat_token('INTEGER');
-      return Num(this.curr_token);
+      return new Num(this.curr_token);
     } else if (this.curr_token.type === 'LEFTPAREN') {
       this.eat_token('LEFTPAREN');
       var node = this.expr();
@@ -270,7 +299,7 @@ function Parser (lex) {
         } else {
         throw Error('invalid operator type in term()');
         }
-        node = new BinOp(node, token, this.factor());
+      node = new BinOp(node, token, this.factor());
     }
     return node;
   };
@@ -299,16 +328,19 @@ function Parser (lex) {
       } else {
         throw Error('invalid operator type in expr()');
       }
-      // else if (token.type === 'SINE') {
-      //   this.eat_token('SINE');
-      //   result = Math.sin(token.value).toFixed(3);
-      // } else if (token.type === 'COSINE') {
-      //   this.eat_token('COSINE');
-      //   result = Math.cos(token.value).toFixed(3);
-      // } else if (token.type === 'TANGENT') {
-      //   this.eat_token('TANGENT');
-      //   result = Math.tan(token.value).toFixed(3);
-      node = BinOp(node, token, this.term());
+      /* //uncomment to enable SIN,COS,TAN tokens
+        else if (token.type === 'SINE') {
+        this.eat_token('SINE');
+        result = Math.sin(token.value).toFixed(3);
+      } else if (token.type === 'COSINE') {
+        this.eat_token('COSINE');
+        result = Math.cos(token.value).toFixed(3);
+      } else if (token.type === 'TANGENT') {
+        this.eat_token('TANGENT');
+        result = Math.tan(token.value).toFixed(3);
+      */
+
+      node = new BinOp(node, token, this.term());
     }
     return node;
   };
@@ -319,12 +351,18 @@ function Parser (lex) {
 
 }
 
+
+/***************************************************
+                    Interpreter
+*****************************************************/
+
 //todo: implement js visitor pattern
 function NodeVisitor () {
+
   NodeVisitor.prototype.visit = function(node) {
     var method_name = 'visit_' + typeof node;
-    var visitor = '';
-    return
+    var visitor = funcs.getAttr(this, method_name);
+    return visitor(node);
   };
 
   NodeVisitor.prototype.generic_visit = function () {
@@ -335,9 +373,12 @@ function NodeVisitor () {
 // Parser: inherits NodeVisitor
 function Interpreter (parser) {
   this.prototype = new NodeVisitor();
+  this.prototype.constructor = this;
+  this.prototype.parent = NodeVisitor.prototype;
   this.parser = parser;
 
   Interpreter.prototype.visit_BinOp = function (node) {
+    console.log(node)
     if (node.op.type === 'PLUS') {
       return this.prototype.visit(node.left) + this.prototype.visit(node.right);
     } else if (node.op.type === 'MINUS') {
@@ -359,7 +400,6 @@ function Interpreter (parser) {
   };
 }
 
-
 //entry point
 while (true) {
   //take expression from standard input
@@ -378,3 +418,4 @@ exports._test = {
   par: Parser,
   interp: Interpreter
 };
+
