@@ -1,38 +1,24 @@
 // JavaScript AEL interpreter
 
-// todo: add variable support
-// parse pascal
+// todo: add variable support, parse pascal
+// todo: cleanup comments
 
   /** Helper methods */
-  //todo: implement inheritsFrom
 
-  function inheritsFrom (args) {
-    //
-  }
-
+  // if curr_char is numeric, check if the char is, continue until char isnt numeric
+  // concat together the numbers as it goes, cast the result to a number (digit)
   function isNumeric(n) {
     return !isNaN(parseFloat(n)) && isFinite(n);
   }
 
+
+  //if an alphabetical character, read the sequence of characters and create a token from it
+  //for this i assume the only expressions to be used are sin, cos, tan
   function isAlphabetChar(c) {
     var regexp = /[a-z]/;
     return regexp.test(c);
   }
 
-  //todo: refactor
-  var funcs = {
-    getAttr: function(ele, attr) {
-        var result = (ele.getAttribute && ele.getAttribute(attr)) || null;
-        if( !result ) {
-            var attrs = ele.attributes;
-            var length = attrs.length;
-            for(var i = 0; i < length; i++)
-                if(attrs[i].nodeName === attr)
-                    result = attrs[i].nodeValue;
-        }
-        return result;
-      }
-  };
   /** /Helper methods */
 
 var readlineSync = require('readline-sync'); // for synchronous user input w/ node
@@ -50,9 +36,10 @@ function Token (type, value) {
 
 /***************************************************
                       Lexer
+
+Lexically analyze the string of characters input by the user, create and return tokens
 *****************************************************/
 
-// Lexically analyze the string of characters input by the user, create and return tokens
 function Lexer (text) {
   this.text = text;
   this.position = 0;
@@ -147,15 +134,11 @@ function Lexer (text) {
         this.skip_whitespace();
       }
 
-      //if an alphabetical character, read the sequence of characters and create a token from it
-      //for this i assume the only expressions to be used are sin, cos, tan
       if (isAlphabetChar(this.curr_char)) {
         token = this.read_char_sequence();
         return token;
       }
 
-      // if curr_char is numeric, check if the char is, continue until char isnt numeric
-      // concat together the numbers as it goes, cast the result to a number (digit)
       if (isNumeric(this.curr_char)) {
         var result = '';
 
@@ -223,6 +206,7 @@ function Lexer (text) {
 
 /***************************************************
                       Parser
+Form Abstract syntax tree
 *****************************************************/
 
 function AST () {}
@@ -329,17 +313,6 @@ function Parser (lex) {
       } else {
         throw Error('invalid operator type in expr()');
       }
-      /* //uncomment to enable SIN,COS,TAN tokens
-        else if (token.type === 'SINE') {
-        this.eat_token('SINE');
-        result = Math.sin(token.value).toFixed(3);
-      } else if (token.type === 'COSINE') {
-        this.eat_token('COSINE');
-        result = Math.cos(token.value).toFixed(3);
-      } else if (token.type === 'TANGENT') {
-        this.eat_token('TANGENT');
-        result = Math.tan(token.value).toFixed(3);
-      */
 
       node = new BinOp(node, token, this.term());
     }
@@ -355,15 +328,19 @@ function Parser (lex) {
 
 /***************************************************
                     Interpreter
+Visit AST nodes, evaluate nodes recursively
 *****************************************************/
 
 //todo: implement js visitor pattern
 function NodeVisitor () {
 
+  //todo: visitor pattern
   NodeVisitor.prototype.visit = function(node) {
     var method_name = 'visit_' + typeof node;
-    var visitor = funcs.getAttr(this, method_name);
-    return visitor(node);
+    //call visit_method_name() somehow
+    //return result?
+    //var visitor = ;
+    //return visitor(node);
   };
 
   NodeVisitor.prototype.generic_visit = function () {
@@ -371,12 +348,8 @@ function NodeVisitor () {
   };
 }
 
-// Parser: inherits NodeVisitor
+// Parser: inherits from NodeVisitor
 function Interpreter (parser) {
-  this.prototype = new NodeVisitor();
-  this.prototype.constructor = this;
-  this.prototype.parent = NodeVisitor.prototype;
-  this.parser = parser;
 
   Interpreter.prototype.visit_BinOp = function (node) {
     console.log(node)
@@ -420,3 +393,20 @@ exports._test = {
   interp: Interpreter
 };
 
+// //todo: implement inheritsFrom
+// function inheritsFrom (args) {
+//   //
+// }
+
+
+/* //uncomment to enable SIN,COS,TAN tokens
+  else if (token.type === 'SINE') {
+  this.eat_token('SINE');
+  result = Math.sin(token.value).toFixed(3);
+} else if (token.type === 'COSINE') {
+  this.eat_token('COSINE');
+  result = Math.cos(token.value).toFixed(3);
+} else if (token.type === 'TANGENT') {
+  this.eat_token('TANGENT');
+  result = Math.tan(token.value).toFixed(3);
+*/
