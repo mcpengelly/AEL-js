@@ -1,6 +1,7 @@
 // JavaScript AEL interpreter
 
 // todo: add variable support, parse pascal
+// visitor pattern. inheritance/prototypes
 // todo: cleanup comments
 
   /** Helper methods */
@@ -78,46 +79,46 @@ function Lexer (text) {
     var digit;
 
     //read the whole character string, then hardcode index values? lol
-    while ((this.curr_char !== null && isAlphabetChar(this.curr_char)) ||
-     this.curr_char === '(' || isNumeric(this.curr_char) || this.curr_char === ')') {
-        if (isNumeric(this.curr_char)) {
-          while (isNumeric(this.curr_char)) {
-            sNum = sNum + this.curr_char;
-            this.next_char();
-          }
-          digit = sNum;
-          sequence = sequence + digit;
-        } else {
-          sequence = sequence + this.curr_char;
-          this.next_char();
-        }
-    }
+  //   while ((this.curr_char !== null && isAlphabetChar(this.curr_char)) ||
+  //    this.curr_char === '(' || isNumeric(this.curr_char) || this.curr_char === ')') {
+  //       if (isNumeric(this.curr_char)) {
+  //         while (isNumeric(this.curr_char)) {
+  //           sNum = sNum + this.curr_char;
+  //           this.next_char();
+  //         }
+  //         digit = sNum;
+  //         sequence = sequence + digit;
+  //       } else {
+  //         sequence = sequence + this.curr_char;
+  //         this.next_char();
+  //       }
+  //   }
 
-    var seq = sequence.toLowerCase();
-    var op = seq[0] + seq[1] + seq[2];// assume operators of of 3 character length. todo: refactor
-    var token = '';
-    var operatorArg = '';
-    digit = parseFloat(digit);
+  //   var seq = sequence.toLowerCase();
+  //   var op = seq[0] + seq[1] + seq[2];// assume operators of of 3 character length. todo: refactor
+  //   var token = '';
+  //   var operatorArg = '';
+  //   digit = parseFloat(digit);
 
-    if (op === 'sin') {
-      token = new Token('SINE', digit);
-      if (logTokens) { console.log(token); }
+  //   if (op === 'sin') {
+  //     token = new Token('SINE', digit);
+  //     if (logTokens) { console.log(token); }
 
-      return token;
-    } else if (op === 'cos') {
-      token = new Token('COSINE', digit);
-      if (logTokens) { console.log(token); }
+  //     return token;
+  //   } else if (op === 'cos') {
+  //     token = new Token('COSINE', digit);
+  //     if (logTokens) { console.log(token); }
 
-      return token;
-    } else if (op === 'tan') {
-      token = new Token('TANGENT', digit);
-      if (logTokens) { console.log(token); }
+  //     return token;
+  //   } else if (op === 'tan') {
+  //     token = new Token('TANGENT', digit);
+  //     if (logTokens) { console.log(token); }
 
-      return token;
-    } else {
-      throw Error('failed to recognize character sequence');
-    }
-  };
+  //     return token;
+  //   } else {
+  //     throw Error('failed to recognize character sequence');
+  //   }
+  // };
 
   /**
    * scans the input creating tokens until the current character is null
